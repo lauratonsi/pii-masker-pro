@@ -1,4 +1,5 @@
 **PII Masker Pro: Governance-by-Design for AI Readiness**
+
 📌 Visione Strategica
 In un panorama aziendale dominato dall'integrazione di LLM (Large Language Models) e workflow agentici, la protezione dei dati sensibili non può essere delegata esclusivamente a modelli probabilistici cloud-based. 
 PII Masker Pro è un framework di anonimizzazione locale progettato secondo i principi della Governance-by-Design. Il tool funge da "filtro di sicurezza" on-premise, ripulendo i dati dai PII (Personally Identifiable Information) prima che lascino il perimetro aziendale, garantendo la compliance al GDPR e riducendo il rischio di data leak.
