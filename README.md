@@ -6,6 +6,7 @@ In un panorama aziendale dominato dall'integrazione di LLM (Large Language Model
 PII Masker Pro è un framework di anonimizzazione locale progettato secondo i principi della Governance-by-Design. Il tool funge da "filtro di sicurezza" on-premise, ripulendo i dati dai PII (Personally Identifiable Information) prima che lascino il perimetro aziendale, garantendo la compliance al GDPR e riducendo il rischio di data leak.
 
 **🛠️ Architettura Tecnica: Approccio Ibrido**
+
 Il sistema supera i limiti dei singoli approcci utilizzando una pipeline a due stadi:
 1. Stadio Deterministico (RegEx): Identificazione ad alta precisione di pattern strutturati come Email, Numeri di Telefono e Codice Fiscale Italiano.
 2. Stadio Probabilistico (NLP): Utilizzo di spaCy (modello it_core_news_lg) per il Named Entity Recognition (NER). A differenza di approcci standard, il sistema è configurato per mascherare selettivamente solo le entità di tipo PER (Persone), preservando LOC (Luoghi) e ORG (Organizzazioni) per non distruggere il valore analitico e geografico del dato per il business.
@@ -17,6 +18,7 @@ Il sistema supera i limiti dei singoli approcci utilizzando una pipeline a due s
 - Zero Cloud Leak: Elaborazione interamente locale tramite Miniconda e modelli spaCy scaricati on-premise.
 
 **🚦 Testing & Quality Assurance**
+
 Il progetto include una suite di test rigorosa (test.py) basata su unittest che verifica:
 - Correttezza delle RegEx.
 - Capacità di astrazione del modello NER.
