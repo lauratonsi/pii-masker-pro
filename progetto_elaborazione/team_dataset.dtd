@@ -1,0 +1,48 @@
+<!--
+  TEAM dataset DTD
+  Input XMLs are generated from Wikivoyage/MediaWiki exports by prepare_dataset.py
+-->
+<!ELEMENT cityGuide (meta, location, intro?, stats?, sections)>
+<!ATTLIST cityGuide
+  id   ID     #REQUIRED
+  name CDATA  #REQUIRED
+>
+
+<!ELEMENT meta (sourceFile, generatedAt)>
+<!ELEMENT sourceFile (#PCDATA)>
+<!ELEMENT generatedAt (#PCDATA)>
+
+<!ELEMENT location EMPTY>
+<!ATTLIST location
+  lat  CDATA #REQUIRED
+  lon  CDATA #REQUIRED
+  zoom CDATA #IMPLIED
+>
+
+<!ELEMENT intro (#PCDATA)>
+
+<!ELEMENT stats (safety?, costOfLiving?, greenScore?)>
+<!ELEMENT safety (#PCDATA)>
+<!ELEMENT costOfLiving (#PCDATA)>
+<!ELEMENT greenScore (#PCDATA)>
+
+<!ELEMENT sections (section+)>
+
+<!ELEMENT section (heading, poi*)>
+<!ATTLIST section
+  type (see|do|eat|drink|buy|sleep|go|other) "other"
+>
+
+<!ELEMENT heading (#PCDATA)>
+
+<!ELEMENT poi (name, address?, url?, description?)>
+<!ATTLIST poi
+  type (see|do|eat|drink|buy|sleep|go|other) "other"
+  lat  CDATA #IMPLIED
+  lon  CDATA #IMPLIED
+>
+
+<!ELEMENT name (#PCDATA)>
+<!ELEMENT address (#PCDATA)>
+<!ELEMENT url (#PCDATA)>
+<!ELEMENT description (#PCDATA)>
