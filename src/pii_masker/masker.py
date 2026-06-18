@@ -130,20 +130,32 @@ class PIIMasker:
     def _trim_spans(
         text: str, results: list[RecognizerResult]
     ) -> list[RecognizerResult]:
-        """Strip whitespace from the edges of each detected span.
+        """Normalize span edges so the right detection wins on overlap.
 
-        spaCy sometimes extends a PERSON entity over a trailing newline. That
-        larger span would otherwise swallow a higher-confidence overlapping
-        detection (e.g. a checksum-valid fiscal code) during conflict
-        resolution. Trimming makes overlapping spans align so the higher score
-        wins instead of the longer one.
+        spaCy sometimes stretches a PERSON entity across a line break, e.g. it
+        tags ``"RSSMRA80A01H501U\\n- Partita"`` as one PERSON. That oversized
+        span *contains* the checksum-valid fiscal code and would beat it during
+        conflict resolution (longer span wins). We therefore:
+
+        1. cut every span at the first internal newline (real names / PII never
+           span lines), and
+        2. strip surrounding whitespace.
+
+        After this, the spurious PERSON span aligns with the fiscal code span,
+        and the higher score (the validated code) wins. Empty spans are dropped.
         """
+        cleaned: list[RecognizerResult] = []
         for r in results:
+            newline = text.find("\n", r.start, r.end)
+            if newline != -1:
+                r.end = newline
             while r.start < r.end and text[r.start].isspace():
                 r.start += 1
             while r.end > r.start and text[r.end - 1].isspace():
                 r.end -= 1
-        return results
+            if r.start < r.end:
+                cleaned.append(r)
+        return cleaned
 
     # -- static masking (stable placeholders) ---------------------------- #
 

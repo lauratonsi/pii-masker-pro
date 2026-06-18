@@ -1,0 +1,21 @@
+[2026-06-18 09:14] Verbale di contatto clienti
+
+Ho parlato con Mario Rossi ieri pomeriggio. Chiama Anna Del Monte
+per fissare l'appuntamento. La Sig.ra Giulia Bianchi ha lasciato un
+messaggio, mentre l'avv. Giuseppe Verdi richiamerà domani.
+
+Recapiti:
+- Email: mario.rossi@gmail.com e g.bianchi@studiolegale.it
+- Telefono: +39 329 1234567 (oppure il fisso 06 0606)
+- Cellulare diretto: 3387654321
+- Codice Fiscale: RSSMRA80A01H501U
+- Partita IVA: 00743110157
+- IBAN: IT60X0542811101000000123456
+- Carta a fine pratica: 4111 1111 1111 1111
+- Targa aziendale: AB123CD
+- IP di accesso al gestionale: 192.168.1.42
+
+Note (da NON mascherare, hanno valore per il business):
+L'azienda Verdi S.p.A. ha sede a Milano e collabora con il Comune di Roma.
+La sede operativa è all'Università di Bologna. Scrivi a Milano per le pratiche
+e contatta Vodafone per l'assistenza tecnica.

@@ -89,6 +89,14 @@ class TestSpanRobustness:
         out = masker.mask("CF RSSMRA80A01H501U\n")
         assert "[FISCAL_CODE]" in out
 
+    def test_person_span_does_not_cross_newline(self, masker):
+        # Regression: spaCy tagged "RSSMRA80A01H501U\n- Partita" as one PERSON,
+        # swallowing the fiscal code and the next line's first word.
+        out = masker.mask("Codice Fiscale: RSSMRA80A01H501U\n- Partita IVA: 00743110157")
+        assert "[FISCAL_CODE]" in out
+        assert "[VAT]" in out
+        assert "Partita" in out  # the next line must stay intact
+
 
 class TestIdempotence:
     def test_double_masking_is_stable(self, masker):
