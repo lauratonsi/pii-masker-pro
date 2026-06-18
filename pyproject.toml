@@ -20,6 +20,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]
+gui = ["streamlit>=1.30"]
 
 [project.scripts]
 pii-masker = "pii_masker.cli:main"

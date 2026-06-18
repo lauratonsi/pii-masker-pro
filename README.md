@@ -67,6 +67,19 @@ pii-masker -f notes.txt --report
 pii-masker -f notes.txt --reversible --map-out map.json
 ```
 
+## Web UI (for non-technical users)
+
+A local Streamlit app: paste text or drop a file, press one button, copy or
+download the masked result. It runs on `localhost`, so no data leaves the machine.
+
+```bash
+pip install -e ".[gui]"   # installs streamlit
+streamlit run app.py
+```
+
+Or just **double-click** `avvia.command` (macOS) / `avvia.bat` (Windows) — it
+opens the app in the browser automatically.
+
 ## Library
 
 ```python
