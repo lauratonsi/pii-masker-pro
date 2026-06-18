@@ -1,35 +1,116 @@
-**PII Masker Pro: Governance-by-Design for AI Readiness**
+# PII Masker Pro
 
-📌 Visione Strategica
+Local, multilingual anonymization of Personally Identifiable Information (PII).
+Built on [Microsoft Presidio](https://microsoft.github.io/presidio/) with custom
+**checksum-validated** Italian recognizers. Everything runs on-premise — no data
+ever leaves the machine.
 
-In un panorama aziendale dominato dall'integrazione di LLM (Large Language Models) e workflow agentici, la protezione dei dati sensibili non può essere delegata esclusivamente a modelli probabilistici cloud-based. 
-PII Masker Pro è un **framework di anonimizzazione locale** progettato secondo i principi della Governance-by-Design. Il tool funge da "filtro di sicurezza" on-premise, ripulendo i dati dai PII (Personally Identifiable Information) prima che lascino il perimetro aziendale, garantendo la compliance al GDPR e riducendo il rischio di data leak.
+## Why
 
-**🛠️ Architettura Tecnica: Approccio Ibrido**
+Detecting PII with plain regular expressions produces a flood of false positives
+(any 16-character string "looks like" a fiscal code). This tool combines:
 
-Il sistema supera i limiti dei singoli approcci utilizzando una pipeline a due stadi:
-1. **Stadio Deterministico (RegEx**): Identificazione ad alta precisione di pattern strutturati come Email, Numeri di Telefono e Codice Fiscale Italiano.
-2. **Stadio Probabilistico (NLP)**: Utilizzo di spaCy (modello ```it_core_news_lg```) per il Named Entity Recognition (NER). A differenza di approcci standard, il sistema è configurato per mascherare selettivamente solo le entità di tipo PER (Persone), preservando LOC (Luoghi) e ORG (Organizzazioni) per non distruggere il valore analitico e geografico del dato per il business.
+1. **Deterministic recognizers with real validation** — a Codice Fiscale is
+   masked only if its *control character* is correct, a Partita IVA only if its
+   *check digit* is correct, a credit card only if it passes *Luhn*. Structural
+   lookalikes are left untouched.
+2. **NER (spaCy)** for names, via Presidio's analyzer.
+3. **A deliberate business rule**: people are masked, but **locations and
+   organizations are kept**, so the geographic and commercial value of the data
+   is preserved.
 
-**🚀 Caratteristiche Principali**
-- **Timestamp Protection**: Algoritmo di tokenizzazione temporanea per proteggere i log temporali da falsi positivi.
-- **Business Context Preservation**: Evita l'over-masking tipico degli agenti AI, mantenendo intatti i riferimenti a città e aziende.
-- **Idempotenza**: Garantita dalla suite di test; processare più volte lo stesso testo non corrompe i placeholder.
-- **Zero Cloud Leak**: Elaborazione interamente locale tramite Miniconda e modelli spaCy scaricati on-premise.
+## What it detects
 
-**🚦 Testing & Quality Assurance**
+| Entity              | Placeholder      | Validation                |
+|---------------------|------------------|---------------------------|
+| Person (NER)        | `[PERSON]`       | spaCy NER                 |
+| Email               | `[EMAIL]`        | regex                     |
+| Phone               | `[PHONE]`        | `phonenumbers`            |
+| Credit card         | `[CREDIT_CARD]`  | Luhn                      |
+| IBAN                | `[IBAN]`         | Presidio IBAN check       |
+| IP address          | `[IP]`           | regex                     |
+| Codice Fiscale (IT) | `[FISCAL_CODE]`  | **control character**     |
+| Partita IVA (IT)    | `[VAT]`          | **check digit**           |
+| Vehicle plate (IT)  | `[PLATE]`        | format (no checksum)      |
 
-Il progetto include una suite di test rigorosa (```test.py```) basata su unittest che verifica:
-- Correttezza delle RegEx.
-- Capacità di astrazione del modello NER.
-- Negative Controls: Verifica che le entità geografiche e aziendali NON vengano mascherate erroneamente.
+Languages: **Italian** and **English** (spaCy `it_core_news_lg` / `en_core_web_lg`).
+
+## Install
 
 ```bash
-# Per eseguire i test di validazione
-python test.py
+conda create -n pii-masker python=3.11 -y
+conda activate pii-masker
+pip install -e .
+python -m spacy download it_core_news_lg
+python -m spacy download en_core_web_lg
 ```
 
-**💻 Requisiti e Installazione**
-- Ambiente: Python 3.11+ (consigliato Miniconda).
-- Dipendenze: pip install spacy.
-- Modello Linguistico: python -m spacy download it_core_news_lg.
+## CLI
+
+```bash
+# Inline text
+pii-masker "Scrivi a mario.rossi@gmail.com"          # -> Scrivi a [EMAIL]
+
+# From a file, to a file
+pii-masker -f notes.txt -o clean.txt
+
+# From stdin
+cat notes.txt | pii-masker --lang it
+
+# English
+pii-masker "Call John at john@acme.com" --lang en
+
+# See what was detected (JSON on stderr)
+pii-masker -f notes.txt --report
+
+# Reversible masking for LLM round-trips (unique tokens + restore map)
+pii-masker -f notes.txt --reversible --map-out map.json
+```
+
+## Library
+
+```python
+from pii_masker import PIIMasker
+
+masker = PIIMasker()                       # loads the models once; reuse it
+masker.mask("Scrivi a mario.rossi@gmail.com", language="it")
+# 'Scrivi a [EMAIL]'
+
+# Round-trip through an external LLM and back
+r = masker.mask_reversible("Contatta Mario Rossi: mario@x.it")
+r.text                                     # '<PERSON_0>: <EMAIL_ADDRESS_0>'
+# ... send r.text to an LLM, then:
+r.restore(llm_response)                    # originals reinserted
+```
+
+## Testing
+
+```bash
+pytest
+```
+
+The suite covers positive detections, **negative controls** (locations and
+organizations must stay intact), checksum validation (a fiscal code with a wrong
+control character is *not* masked), idempotence, reversibility and the
+trailing-newline span-conflict regression.
+
+## Recall helpers
+
+- **Italian phone numbers** are detected with or without an international prefix
+  (`+39 329 1234567` and a bare `3291234567` both work).
+- **Names spaCy misses** are recovered from context: a name after an honorific
+  ("Avv. Bianchi", "Sig.ra Rossi") or after a communication verb
+  ("Chiama Mario Rossi"). To avoid false positives, the verb rule only fires on a
+  full first-plus-last name, so "Scrivi a Milano" / "Contatta Vodafone" stay intact.
+
+## Known limitations
+
+- **NER recall is not perfect.** Detection is best-effort, not a guarantee; treat
+  the output as a strong filter, not a compliance certificate.
+- A name after a verb that is a real person but written as a single token
+  (e.g. only a first name) may still be missed.
+- Locations/organizations are intentionally **not** masked.
+
+## License
+
+MIT.
