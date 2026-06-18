@@ -1,4 +1,4 @@
-# PII Masker Pro
+# PII Masker
 
 🇮🇹 Anonimizzazione locale e multilingua dei dati personali (PII), costruita su
 [Microsoft Presidio](https://microsoft.github.io/presidio/) con recognizer
